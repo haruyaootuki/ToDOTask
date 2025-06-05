@@ -1,0 +1,201 @@
+/* Custom styles for ToDo App - Minimal overrides for Bootstrap theme */
+
+:root {
+    --task-border-radius: 8px;
+    --task-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --completed-opacity: 0.6;
+    --transition-speed: 0.2s;
+}
+
+/* Custom task styling */
+.task-item {
+    border-radius: var(--task-border-radius) !important;
+    box-shadow: var(--task-shadow);
+    transition: all var(--transition-speed) ease;
+    border: 1px solid var(--bs-border-color);
+}
+
+.task-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.task-item.completed {
+    opacity: var(--completed-opacity);
+}
+
+.task-item.completed .task-description {
+    text-decoration: line-through;
+    color: var(--bs-secondary-color);
+}
+
+/* Custom checkbox styling */
+.task-checkbox {
+    transform: scale(1.2);
+    margin-right: 0.75rem;
+}
+
+/* Filter button styling */
+.filter-buttons .btn {
+    border-radius: 20px;
+    margin: 0 0.25rem;
+    font-weight: 500;
+}
+
+.filter-buttons .btn.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+/* Task form styling */
+.task-form {
+    background: var(--bs-body-bg);
+    border-radius: var(--task-border-radius);
+    box-shadow: var(--task-shadow);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--bs-border-color);
+}
+
+/* Task count badge */
+.task-count {
+    font-size: 0.875rem;
+    border-radius: 15px;
+    padding: 0.25rem 0.75rem;
+}
+
+/* Delete button hover effect */
+.btn-delete:hover {
+    transform: scale(1.05);
+}
+
+/* Loading state */
+.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--bs-secondary-color);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .task-item {
+        margin-bottom: 0.75rem;
+    }
+    
+    .filter-buttons {
+        margin-bottom: 1rem;
+    }
+    
+    .filter-buttons .btn {
+        margin-bottom: 0.5rem;
+        display: block;
+        width: 100%;
+    }
+    
+    .task-form {
+        padding: 1rem;
+    }
+}
+
+/* Animation for new tasks */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.task-item.new {
+    animation: slideIn var(--transition-speed) ease-out;
+}
+
+/* Focus styles for accessibility */
+.task-checkbox:focus,
+.btn:focus,
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Error message styling */
+.alert {
+    border-radius: var(--task-border-radius);
+    border: none;
+    font-weight: 500;
+}
+
+/* Success message styling */
+.alert-success {
+    background-color: rgba(var(--bs-success-rgb), 0.1);
+    color: var(--bs-success);
+}
+
+.alert-danger {
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
+    color: var(--bs-danger);
+}
+
+/* Header styling */
+.app-header {
+    background: linear-gradient(135deg, var(--bs-primary), var(--bs-info));
+    color: white;
+    border-radius: var(--task-border-radius);
+    margin-bottom: 2rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.app-header h1 {
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.app-header p {
+    margin-bottom: 0;
+    opacity: 0.9;
+}
+
+/* Security indicator */
+.security-indicator {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: var(--bs-success);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    box-shadow: var(--task-shadow);
+    z-index: 1000;
+}
+
+/* Print styles */
+@media print {
+    .task-form,
+    .filter-buttons,
+    .btn,
+    .security-indicator {
+        display: none !important;
+    }
+    
+    .task-item {
+        box-shadow: none;
+        border: 1px solid #000;
+        margin-bottom: 0.5rem;
+    }
+}

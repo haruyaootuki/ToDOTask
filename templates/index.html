@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Secure ToDo App - Task Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8 col-xl-6">
+        <!-- App Header -->
+        <div class="app-header">
+            <h1 class="display-5 mb-2">🔒 Secure ToDo</h1>
+            <p class="mb-0">Enterprise-grade task management with advanced security</p>
+        </div>
+        
+        <!-- Task Statistics -->
+        <div class="row mb-4">
+            <div class="col-4">
+                <div class="card text-center h-100">
+                    <div class="card-body py-3">
+                        <h3 class="card-title mb-1" id="totalCount">{{ tasks|length }}</h3>
+                        <p class="card-text small text-muted mb-0">Total Tasks</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card text-center h-100">
+                    <div class="card-body py-3">
+                        <h3 class="card-title mb-1 text-warning" id="activeCount">
+                            {{ tasks|selectattr('completed', 'equalto', false)|list|length }}
+                        </h3>
+                        <p class="card-text small text-muted mb-0">Active</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card text-center h-100">
+                    <div class="card-body py-3">
+                        <h3 class="card-title mb-1 text-success" id="completedCount">
+                            {{ tasks|selectattr('completed', 'equalto', true)|list|length }}
+                        </h3>
+                        <p class="card-text small text-muted mb-0">Completed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Task Form -->
+        <div class="task-form">
+            <h5 class="mb-3">
+                <svg width="20" height="20" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+                Add New Task
+            </h5>
+            
+            <form id="taskForm" method="POST" action="{{ url_for('add_task') }}">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    <div class="input-group">
+                        {{ form.description(class="form-control", 
+                                          placeholder="Enter your task description...", 
+                                          maxlength="500",
+                                          autocomplete="off") }}
+                        <button type="submit" class="btn btn-primary" disabled>
+                            <svg width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                            Add Task
+                        </button>
+                    </div>
+                    <div class="form-text d-flex justify-content-between">
+                        <span id="charCount" class="text-muted">0/500</span>
+                        <small class="text-muted">
+                            <svg width="12" height="12" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+                            </svg>
+                            Secured with XSS protection
+                        </small>
+                    </div>
+                    <div id="validationError" class="text-danger small mt-1" style="display: none;"></div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Filter Buttons -->
+        <div class="filter-buttons text-center mb-4">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-secondary filter-btn {{ 'active' if filter_type == 'all' else '' }}" 
+                        data-filter="all">
+                    All
+                    <span class="badge bg-secondary ms-1">{{ tasks|length }}</span>
+                </button>
+                <button type="button" class="btn btn-outline-warning filter-btn {{ 'active' if filter_type == 'active' else '' }}" 
+                        data-filter="active">
+                    Active
+                    <span class="badge bg-warning ms-1">{{ tasks|selectattr('completed', 'equalto', false)|list|length }}</span>
+                </button>
+                <button type="button" class="btn btn-outline-success filter-btn {{ 'active' if filter_type == 'completed' else '' }}" 
+                        data-filter="completed">
+                    Completed
+                    <span class="badge bg-success ms-1">{{ tasks|selectattr('completed', 'equalto', true)|list|length }}</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Tasks List -->
+        <div id="tasksList">
+            {% if tasks %}
+                {% for task in tasks %}
+                <div class="task-item card mb-3 {{ 'completed' if task.completed else '' }}" 
+                     style="{{ 'display: none;' if (filter_type == 'active' and task.completed) or (filter_type == 'completed' and not task.completed) else '' }}">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <!-- Task Checkbox -->
+                            <div class="form-check me-3">
+                                <input type="checkbox" 
+                                       class="form-check-input task-checkbox" 
+                                       id="task-{{ task.id }}"
+                                       data-task-id="{{ task.id }}"
+                                       {{ 'checked' if task.completed else '' }}>
+                            </div>
+                            
+                            <!-- Task Content -->
+                            <div class="flex-grow-1">
+                                <label for="task-{{ task.id }}" class="task-description mb-1 d-block">
+                                    {{ task.description|safe }}
+                                </label>
+                                <small class="text-muted">
+                                    <svg width="12" height="12" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                                    </svg>
+                                    Created: {{ task.created_at[:10] }}
+                                    {% if task.updated_at != task.created_at %}
+                                        | Updated: {{ task.updated_at[:10] }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            
+                            <!-- Delete Button -->
+                            <button type="button" 
+                                    class="btn btn-outline-danger btn-sm btn-delete"
+                                    data-task-id="{{ task.id }}"
+                                    title="Delete task">
+                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="{{ 'display: none;' if tasks else '' }}">
+            <svg width="64" height="64" fill="currentColor" class="mb-3 opacity-50" viewBox="0 0 16 16">
+                <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33.076 33.076 0 0 1 2.5.5zm.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935zm10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935z"/>
+            </svg>
+            <h5 class="mb-2">No tasks yet</h5>
+            <p class="text-muted">Add your first task above to get started!</p>
+        </div>
+        
+        <!-- Security Information -->
+        <div class="mt-5 pt-4 border-top">
+            <div class="row">
+                <div class="col-12">
+                    <h6 class="text-muted mb-3">
+                        <svg width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                            <path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/>
+                            <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                        </svg>
+                        Security Features Active
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li>✓ XSS Protection</li>
+                                <li>✓ CSRF Protection</li>
+                                <li>✓ Input Validation</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small text-muted mb-0">
+                                <li>✓ Rate Limiting</li>
+                                <li>✓ Secure Headers</li>
+                                <li>✓ Data Sanitization</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden CSRF token for JavaScript -->
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{% endblock %}
