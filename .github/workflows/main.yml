@@ -1,4 +1,4 @@
-ame: Python CI/CD
+name: Python CI/CD
 
 on: 
   push:
