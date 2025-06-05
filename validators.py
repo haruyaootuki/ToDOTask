@@ -50,7 +50,8 @@ class TaskValidator:
         
         try:
             task_id_int = int(task_id)
-            return 1 <= task_id_int <= 999999  # Reasonable range
+            result = 1 <= task_id_int <= 999999
+            return result
         except (ValueError, TypeError):
             return False
     
