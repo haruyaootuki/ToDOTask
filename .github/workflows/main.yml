@@ -3,8 +3,7 @@ name: Python CI/CD
 on: 
   push:
     branches:
-      - main # mainブランチへのプッシュ時に実行
-
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,7 +15,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.13' # 使用するPythonのバージョン
+        python-version: '3.13'
 
     - name: Install uv
       run: pip install uv
