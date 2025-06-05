@@ -6,6 +6,9 @@ import re
 import html
 from typing import Any, Union
 
+# Define a constant for control characters pattern
+CONTROL_CHARS_PATTERN = r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'
+
 class TaskValidator:
     """Validate task-related inputs"""
     
@@ -20,7 +23,7 @@ class TaskValidator:
             return False
         
         # Check for null bytes and control characters
-        if re.search(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', description):
+        if re.search(CONTROL_CHARS_PATTERN, description):
             return False
         
         # Check for potentially dangerous HTML/JS patterns
@@ -67,7 +70,7 @@ class TaskValidator:
             return ""
         
         # Remove null bytes and control characters
-        description = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', description)
+        description = re.sub(CONTROL_CHARS_PATTERN, '', description)
         
         # Strip whitespace
         description = description.strip()
@@ -93,7 +96,7 @@ class SecurityValidator:
             return False
         
         # Check for null bytes and dangerous control characters
-        if re.search(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', value):
+        if re.search(CONTROL_CHARS_PATTERN, value):
             return False
         
         return True
