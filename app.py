@@ -65,11 +65,11 @@ def index():
         # Filter tasks based on type
         filtered_tasks = []
         for task in tasks_storage:
-            if filter_type == 'all':
-                filtered_tasks.append(task)
-            elif filter_type == 'active' and not task['completed']:
-                filtered_tasks.append(task)
-            elif filter_type == 'completed' and task['completed']:
+            if (
+                filter_type == 'all'
+                or (filter_type == 'active' and not task['completed'])
+                or (filter_type == 'completed' and task['completed'])
+            ):
                 filtered_tasks.append(task)
         
         # Create form for new tasks
@@ -214,11 +214,11 @@ def get_tasks():
         
         filtered_tasks = []
         for task in tasks_storage:
-            if filter_type == 'all':
-                filtered_tasks.append(task)
-            elif filter_type == 'active' and not task['completed']:
-                filtered_tasks.append(task)
-            elif filter_type == 'completed' and task['completed']:
+            if (
+                filter_type == 'all'
+                or (filter_type == 'active' and not task['completed'])
+                or (filter_type == 'completed' and task['completed'])
+            ):
                 filtered_tasks.append(task)
         
         return jsonify({
