@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main # mainブランチへのプッシュ時に実行
+      - dev
 
 jobs:
   build:
