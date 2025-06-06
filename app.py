@@ -12,6 +12,7 @@ from wtforms.validators import DataRequired, Length
 from werkzeug.middleware.proxy_fix import ProxyFix
 from security import SecurityHeaders, RateLimiter
 from validators import TaskValidator
+import requests
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -118,6 +119,14 @@ def add_task():
             
             flash('Task added successfully!', 'success')
             app.logger.info(f"Task added: {safe_description}")
+
+            # Send heartbeat to Better Uptime
+            try:
+                response = requests.get("https://uptime.betterstack.com/api/v1/heartbeat/LqbGnaKAvYvmVwGLWz8KiC2D", timeout=5)
+                response.raise_for_status() # Raise an exception for HTTP errors (4xx or 5xx)
+                app.logger.info("Heartbeat sent successfully to Better Uptime.")
+            except requests.exceptions.RequestException as e:
+                app.logger.error(f"Failed to send heartbeat to Better Uptime: {e}")
             
         else:
             # Handle form validation errors
