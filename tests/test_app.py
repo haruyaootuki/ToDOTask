@@ -81,3 +81,35 @@ class TestTaskManagement:
         response = client.post(url_for('delete_task', task_id=999), data=data, content_type='application/x-www-form-urlencoded')
         assert response.status_code == 404
         assert response.json['error'] == 'Task not found'
+
+    def test_get_tasks_invalid_filter(self, client):
+        response = client.get(url_for('get_tasks', filter='invalid_filter'))
+        assert response.status_code == 200
+        assert response.json['success'] is True
+        assert response.json['total'] == 0
+        assert response.json['tasks'] == []
+
+    def test_get_all_tasks_success(self, client):
+        # Add some tasks
+        tasks_storage.extend([
+            {'id': 1, 'description': 'Task 1', 'completed': False},
+            {'id': 2, 'description': 'Task 2', 'completed': True}
+        ])
+        response = client.get(url_for('get_tasks'))
+        assert response.status_code == 200
+        assert response.json['success'] is True
+        assert response.json['total'] == 2
+        assert len(response.json['tasks']) == 2
+
+    def test_security_headers_applied(self, client):
+        response = client.get(url_for('index'))
+        assert response.status_code == 200
+        assert 'Content-Security-Policy' in response.headers
+        assert 'X-Content-Type-Options' in response.headers
+
+    def test_toggle_task_invalid_id(self, client):
+        # Attempt to toggle a task with an invalid ID
+        data = {'csrf_token': 'valid_csrf_token'}
+        response = client.post(url_for('toggle_task', task_id=999), data=data, content_type='application/x-www-form-urlencoded')
+        assert response.status_code == 404
+        assert response.json['error'] == 'Task not found'
